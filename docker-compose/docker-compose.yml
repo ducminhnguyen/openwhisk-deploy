@@ -137,7 +137,7 @@ services:
       - /var/lib/docker/containers:/containers
       - /sys/fs/cgroup:/sys/fs/cgroup
     ports:
-      - "8085:8085"
+      - "8070:8085"
       - "9333:9222"
 
   # The API Gateway is currently used to expose the Controller API
@@ -160,6 +160,7 @@ services:
     image: redis:2.8
     ports:
       - "6379:6379"
+
   apigateway:
     image: openwhisk/apigateway:nightly
     links:
@@ -181,8 +182,8 @@ services:
       - ~/tmp/openwhisk/api-gateway-config/api-gateway/generated-conf.d:/etc/api-gateway/generated-conf.d
       - ~/tmp/openwhisk/rclone:/root/.config/rclone:rw
     ports:
-      - "80:80"
-      - "443:443"
+      - "9080:80"
+      - "9443:443"
       - "9000:9000"
       - "9090:8080"
 
@@ -204,11 +205,10 @@ services:
       - kafka
 
   kafka-topics-ui:
-      image: landoop/kafka-topics-ui:0.9.3
+      image: provectuslabs/kafka-ui:latest
       environment:
-        - KAFKA_REST_PROXY_URL=http://kafka-rest:8082
-        - KAFKA_REST_BOOTSTRAP_SERVERS=PLAINTEXT://kafka:9092
-        - PROXY=true
+        - KAFKA_CLUSTERS_0_NAME=openwhisk
+        - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
       ports:
         - 8001:8000
       links:

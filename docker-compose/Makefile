@@ -40,7 +40,7 @@ DOCKER_IMAGE_TAG ?= nightly
 OPENWHISK_VERSION ?= master
 OPENWHISK_PROJECT_HOME ?= $(CURDIR)/openwhisk-src
 OPENWHISK_CATALOG_HOME ?= $(CURDIR)/openwhisk-catalog
-WSK_CLI ?= $(OPENWHISK_PROJECT_HOME)/bin/wsk
+WSK_CLI ?= $(OPENWHISK_PROJECT_HOME)/bin/wsk --apihost https://localhost:9443
 WSK_CLI_VERSION ?= latest
 WSK_CONFIG_FILE=$(CURDIR)/.wskprops
 OPEN_WHISK_DB_PREFIX ?= local_
@@ -304,7 +304,7 @@ wait-for-docker-compose-up:
 	echo "Waiting till all containers are powered up... ";
 	sleep 1;
 	@trycount=0; \
-	trycounttimeout=60; \
+	trycounttimeout=600; \
 	up=`$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker-compose --project-name openwhisk ps | grep Up -c`; \
 	servicescount=`$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker-compose -f $(DOCKER_COMPOSE_FILE) config --services | wc -l | xargs`; \
 	docker_ps() { \
@@ -385,7 +385,7 @@ init-api-management:
 init-catalog:
 	OPENWHISK_HOME=$(OPENWHISK_PROJECT_HOME) $(OPENWHISK_CATALOG_HOME)/packages/installCatalogUsingWskdeploy.sh \
 	  `cat $(OPENWHISK_PROJECT_HOME)/ansible/files/auth.whisk.system` \
-	  $(DOCKER_HOST_IP):443 \
+	  $(DOCKER_HOST_IP):9443 \
 	  $(WSK_CLI)
 
 .PHONY: destroy
@@ -410,6 +410,7 @@ hello-world: create-hello-world-function
 	echo "invoking the hello-world function ... "
 
 	echo "$$(tput setaf 4)adding the function to whisk ...$$(tput sgr0)"
+	echo $(WSK_CONFIG_FILE) $(WSK_CLI)
 	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action create hello hello.js
 
 	echo "$$(tput setaf 4)invoking the function ...$$(tput sgr0)"
